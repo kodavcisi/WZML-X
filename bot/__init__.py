@@ -35,6 +35,18 @@ from uvloop import install
 install()
 setdefaulttimeout(600)
 
+# Ensure an asyncio event loop exists in the main thread.
+# Pyrogram's Dispatcher calls asyncio.get_event_loop(), and with uvloop
+# installed there may be no current event loop which raises:
+#   RuntimeError: There is no current event loop in thread 'MainThread'.
+# Creating and setting a new loop here prevents that error.
+import asyncio
+
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
 pyroutils.MIN_CHAT_ID = -999999999999
 pyroutils.MIN_CHANNEL_ID = -100999999999999
 botStartTime = time()
@@ -598,7 +610,7 @@ if len(IMDB_TEMPLATE) == 0:
 <b>Genre: </b>{genres}
 <b>IMDb URL:</b> {url}
 <b>Language: </b>{languages}
-<b>Country of Origin : </b> {countries}
+<b>Country of Origin : </b>{countries}
 
 <b>Story Line: </b><code>{plot}</code>
 
